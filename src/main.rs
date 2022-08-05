@@ -1,12 +1,11 @@
 use std::{
-    collections::{HashMap, HashSet},
     fs::File,
     io::{BufRead, BufReader, Write},
     path::PathBuf,
     sync::{
         atomic::{AtomicU32, Ordering},
         Mutex,
-    },
+    }, collections::{BTreeSet, BTreeMap},
 };
 
 use clap::Parser;
@@ -65,7 +64,7 @@ fn main() {
     res1.dedup_by(|(a1, a2), (b1, b2)| (*a1 | *a2) == (*b1 | *b2));
     eprintln!("finished collecting all 2-word pairs ({})", res1.len());
     let no_ana = AtomicU32::new(0);
-    let words_mutex = Mutex::new(HashSet::<Vec<(u32, Vec<&str>)>>::new());
+    let words_mutex = Mutex::new(BTreeSet::<Vec<(u32, Vec<&str>)>>::new());
     if args.incremental_print {
         println!("[");
     }
@@ -79,8 +78,8 @@ fn main() {
                         .iter()
                         .filter(|(m5, _)| *m5 & (*m1 | *m2 | *m3 | *m4) == 0)
                         .fold(
-                            HashMap::new(),
-                            |mut hm: HashMap<u32, Vec<&str>>, (m5, w5)| {
+                            BTreeMap::new(),
+                            |mut hm: BTreeMap<u32, Vec<&str>>, (m5, w5)| {
                                 hm.entry(*m5)
                                     .and_modify(|e| e.push(w5))
                                     .or_insert_with(|| vec![w5]);
